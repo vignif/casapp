@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     image: casapp-web:latest
     ports:
-      - "3000:3000"
+      - "127.0.0.1:8003:3000"
     environment:
       # Persist SQLite database under /data, and point Prisma to it
       DATABASE_URL: file:/data/dev.db
