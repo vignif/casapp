@@ -3,7 +3,6 @@ import { Property } from "../lib/types";
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { FaHome, FaHouseUser, FaHouseDamage } from "react-icons/fa";
-import L from "leaflet";
 import ReactDOMServer from "react-dom/server";
 
 // Dynamic import to avoid SSR issues with react-leaflet
@@ -83,8 +82,8 @@ const fetchCoordinates = async (property: Property): Promise<[number, number] | 
   return null;
 };
 
-// Create custom divIcon
-const createCustomIcon = (icon: React.ReactElement, color: string) => {
+// Create custom divIcon (requires leaflet instance available on client)
+const createCustomIcon = (L: any, icon: React.ReactElement, color: string) => {
   const iconHtml = ReactDOMServer.renderToStaticMarkup(icon);
   return L.divIcon({
     className: "custom-icon",
@@ -99,16 +98,26 @@ export default function PropertyMap({ properties }: Props) {
   const [coordinates, setCoordinates] = useState<Record<string, [number, number]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [icons, setIcons] = useState<Record<string, any>>({});
+  const [leafletLib, setLeafletLib] = useState<any>(null);
 
-  // Initialize icons
+  // Dynamically load leaflet on client and initialize icons
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    let mounted = true;
+    (async () => {
+      if (typeof window === "undefined") return;
+      const leafletModule = await import("leaflet");
+      const L = (leafletModule as any).default ?? leafletModule;
+      if (!mounted) return;
+      setLeafletLib(L);
       setIcons({
-        occupied: createCustomIcon(<FaHouseUser />, "#22c55e"),
-        vacant: createCustomIcon(<FaHouseDamage />, "#ef4444"),
-        default: createCustomIcon(<FaHome />, "#3b82f6"),
+        occupied: createCustomIcon(L, <FaHouseUser />, "#22c55e"),
+        vacant: createCustomIcon(L, <FaHouseDamage />, "#ef4444"),
+        default: createCustomIcon(L, <FaHome />, "#3b82f6"),
       });
-    }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Load coordinates for all properties
@@ -156,7 +165,7 @@ export default function PropertyMap({ properties }: Props) {
       }, [0, 0]).map(sum => sum / properties.length) as [number, number])
     : [41.9028, 12.4964];
 
-  if (isLoading) {
+  if (isLoading || !leafletLib) {
     return (
       <div className="w-full h-64 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
         <div className="text-gray-500">Loading map...</div>
