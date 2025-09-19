@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/db";
 import { unlink } from "fs/promises";
 import { join } from "path";
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string; docId: string } }) {
+export async function DELETE(_req: Request, { params }: { params: { id: string; docId: string } }) {
   try {
     const document = await prisma.propertyDocument.findUnique({
       where: { id: params.docId },
