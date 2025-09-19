@@ -1,15 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/db";
+import { authOptions } from "@/app/lib/authOptions";
 
 export async function GET() {
+  const { getServerSession } = await import("next-auth");
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return new NextResponse("Unauthorized", { status: 401 });
   const data = await prisma.property.findMany({
+    where: { ownerEmail: session.user.email },
     include: { tenant: true, maintenance: true, calendar: true },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(data);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
+  const { getServerSession } = await import("next-auth");
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return new NextResponse("Unauthorized", { status: 401 });
   const body = await req.json();
   const created = await prisma.property.create({
     data: {
@@ -23,6 +31,7 @@ export async function POST(req: NextRequest) {
       sizeSqm: body.sizeSqm ?? 0,
       value: body.value ?? null,
       notes: body.notes ?? null,
+      ownerEmail: session.user.email,
     },
   });
   return NextResponse.json(created, { status: 201 });

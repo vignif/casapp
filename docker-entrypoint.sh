@@ -1,9 +1,6 @@
 #!/bin/sh
 set -e
 
-#!/bin/sh
-set -e
-
 # Ensure data directories exist (DB and uploads)
 mkdir -p /data /uploads
 
@@ -20,6 +17,10 @@ cd /app
 
 # Run Prisma migrations (generate is already done at build time by next)
 # Note: we run as non-root; prisma will write to /data/dev.db which is mounted
-npx prisma migrate deploy || true
+# Try running migrations; if none, push schema
+if ! npx prisma migrate deploy; then
+  echo "migrate deploy failed; attempting prisma db push"
+  npx prisma db push || true
+fi
 
 exec "$@"

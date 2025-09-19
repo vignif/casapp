@@ -1,10 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/db";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
+import { authOptions } from "@/app/lib/authOptions";
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: any) {
+  const { getServerSession } = await import("next-auth");
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return new NextResponse("Unauthorized", { status: 401 });
+  const prop = await prisma.property.findUnique({ where: { id: params.id } });
+  if (!prop || prop.ownerEmail !== session.user.email) return new NextResponse("Not found", { status: 404 });
   const documents = await prisma.propertyDocument.findMany({
     where: { propertyId: params.id },
     orderBy: { createdAt: "desc" },
@@ -12,8 +18,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json(documents);
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: any) {
   try {
+    const { getServerSession } = await import("next-auth");
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return new NextResponse("Unauthorized", { status: 401 });
+    const prop = await prisma.property.findUnique({ where: { id: params.id } });
+    if (!prop || prop.ownerEmail !== session.user.email) return new NextResponse("Not found", { status: 404 });
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const name = formData.get("name") as string;
@@ -25,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "uploads", params.id);
+  const uploadsDir = join(process.cwd(), "uploads", params.id);
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }

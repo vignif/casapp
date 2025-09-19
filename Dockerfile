@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:1.6
 
 # ---------- Base builder ----------
-FROM node:20-bookworm-slim AS base
+FROM node:22-bookworm-slim AS base
 WORKDIR /app
 
 # Install OS deps needed by sharp/next/swc etc (optional minimal)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+  && apt-get -y upgrade \
+  && apt-get install -y --no-install-recommends \
     ca-certificates \
     dumb-init \
   && rm -rf /var/lib/apt/lists/*
@@ -30,12 +32,18 @@ RUN npx prisma generate
 RUN npm run build
 
 # ---------- Runner ----------
-FROM node:20-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Add a non-root user
-RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
+## Add a non-root user (Debian/Ubuntu syntax)
+RUN apt-get update \
+  && apt-get -y upgrade \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    dumb-init \
+  && rm -rf /var/lib/apt/lists/* \
+  && groupadd -r nextjs && useradd -r -g nextjs -d /app -s /usr/sbin/nologin nextjs
 
 # Copy the standalone server output and static assets
 # Next.js standalone places server in .next/standalone and static in .next/static
@@ -54,9 +62,11 @@ COPY --from=builder /app/node_modules ./node_modules
 # Expose port
 EXPOSE 3000
 
-# Use non-root user
-USER nextjs
-
 # Start
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "/usr/local/bin/docker-entrypoint.sh"]
+
+# Ensure permissions then drop privileges
+RUN chown -R nextjs:nextjs /app
+USER nextjs
+
 CMD ["node", "server.js"]

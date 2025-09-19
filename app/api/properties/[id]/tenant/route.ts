@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/db";
+import { authOptions } from "@/app/lib/authOptions";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: any) {
+  const { getServerSession } = await import("next-auth");
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return new NextResponse("Unauthorized", { status: 401 });
+  const prop = await prisma.property.findUnique({ where: { id: params.id } });
+  if (!prop || prop.ownerEmail !== session.user.email) return new NextResponse("Not found", { status: 404 });
   const body = await req.json();
   const upserted = await prisma.tenantContract.upsert({
     where: { propertyId: params.id },
@@ -28,7 +34,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(upserted);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: any) {
+  const { getServerSession } = await import("next-auth");
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return new NextResponse("Unauthorized", { status: 401 });
+  const prop = await prisma.property.findUnique({ where: { id: params.id } });
+  if (!prop || prop.ownerEmail !== session.user.email) return new NextResponse("Not found", { status: 404 });
   await prisma.tenantContract.delete({ where: { propertyId: params.id } });
   return new NextResponse(null, { status: 204 });
 }

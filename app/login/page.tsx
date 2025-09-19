@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded">
-      <h1 className="text-xl mb-4">Sign In</h1>
+  <h1 className="text-xl mb-4">Sign In</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="email"
@@ -32,14 +32,15 @@ export default function LoginPage() {
         />
         <input
           type="password"
-          placeholder="Password (demo)"
+          placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
           className="border rounded px-2 py-1"
         />
         {error && <div className="text-red-500">{error}</div>}
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Sign In</button>
+  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Sign In</button>
+  <a href="/register" className="text-sm underline">Need an account? Register</a>
       </form>
     </div>
   );

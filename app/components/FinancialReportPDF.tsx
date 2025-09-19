@@ -167,7 +167,7 @@ export default function FinancialReportPDF({ properties, onExport }: Props) {
     yPosition = addSection("Summary Statistics", summaryContent);
 
     // Add footers to all pages
-    const totalPages = doc.getNumberOfPages();
+  const totalPages: number = (doc as any).getNumberOfPages ? (doc as any).getNumberOfPages() : 1;
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       addFooter(i, totalPages);
