@@ -10,32 +10,73 @@
 !.yarn/releases
 !.yarn/versions
 
+# package manager caches
+.pnpm-store
+.npm
+.bun
+*.tsbuildinfo
+
 # testing
 /coverage
+.nyc_output
+coverage-final.json
+*.lcov
 
 # next.js
 /.next/
 /out/
+.turbo
+.swc/
 
 # production
 /build
+/uploads
+/public/uploads
+dist
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.orig
+*.log
+logs
+.cache
+.eslintcache
+.stylelintcache
+.history/
+*.swp
+*.swo
+.idea/
+.fleet/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.direnv/
+.envrc
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
 # typescript
-*.tsbuildinfo
-next-env.d.ts
+
+# prisma & sqlite databases (keep migrations tracked)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+prisma/dev.db
+prisma/*.db*
