@@ -2,7 +2,6 @@
 
 # ---------- Base builder ----------
 FROM node:20-bookworm-slim AS base
-ENV NODE_ENV=production
 WORKDIR /app
 
 # Install OS deps needed by sharp/next/swc etc (optional minimal)
