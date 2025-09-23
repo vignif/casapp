@@ -1,12 +1,12 @@
 POETRY?=poetry
 
-.PHONY: install test lint run migrate superuser
+.PHONY: install test lint run migrate superuser collectstatic format
 
 install:
 	$(POETRY) install
 
 migrate:
-	$(POETRY) run python manage.py migrate
+	$(POETRY) run python manage.py migrate --noinput
 
 superuser:
 	$(POETRY) run python manage.py createsuperuser
@@ -22,3 +22,6 @@ format:
 
 test:
 	$(POETRY) run pytest -q
+
+collectstatic:
+	$(POETRY) run python manage.py collectstatic --noinput

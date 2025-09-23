@@ -55,5 +55,28 @@ npm test
 - Frontend `basePath` is `/casapp`.
 - Public URL: `https://apps.francescovigni.com/casapp/`.
 
+### Docker & Docker Compose
+
+Build and run everything (Postgres, backend on :8003, frontend on :3000):
+
+```bash
+docker compose up -d --build
+```
+
+View logs:
+
+```bash
+docker compose logs -f --tail=200
+```
+
+Run migrations and collect static (if needed):
+
+```bash
+docker compose exec backend python manage.py migrate --noinput
+docker compose exec backend python manage.py collectstatic --noinput
+```
+
+Then configure Caddy to proxy `/casapp/api` to `localhost:8003` and `/casapp` to `localhost:3000` (see `deploy/Caddyfile.example`).
+
 ### Caddy
 Use `deploy/Caddyfile.example` as a starting point. It proxies `/casapp/api` to Django (`localhost:8003`) and the rest to Next.js (`localhost:3000`).
