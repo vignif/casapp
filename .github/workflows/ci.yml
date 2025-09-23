@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Install deps
+        run: poetry install
+      - name: Migrate (wait for DB)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/casapp
+        run: |
+          for i in {1..12}; do
+            poetry run python manage.py migrate --noinput && break || sleep 5;
+          done
+      - name: Tests with coverage 100%
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/casapp
+        run: poetry run pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install deps
+        run: npm install
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Test (100% coverage)
+        run: npm test -- --ci --coverage --watchAll=false

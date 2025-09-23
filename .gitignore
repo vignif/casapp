@@ -1,82 +1,28 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+.env.*
+.pytest_cache/
+.coverage*
+htmlcov/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Django
+/staticfiles/
+/media/
 
-# package manager caches
-.pnpm-store
-.npm
-.bun
-*.tsbuildinfo
+# Node
+node_modules/
+.next/
+dist/
+coverage/
+.env.local
+.env.production
 
-# testing
-/coverage
-.nyc_output
-coverage-final.json
-*.lcov
+# VSCode
+.vscode/
 
-# next.js
-/.next/
-/out/
-.turbo
-.swc/
-
-# production
-/build
-/uploads
-/public/uploads
-dist
-
-# misc
+# macOS
 .DS_Store
-Thumbs.db
-*.pem
-*.orig
-*.log
-logs
-.cache
-.eslintcache
-.stylelintcache
-.history/
-*.swp
-*.swo
-.idea/
-.fleet/
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.direnv/
-.envrc
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-lerna-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
-
-# vercel
-.vercel
-
-# typescript
-
-# prisma & sqlite databases (keep migrations tracked)
-*.db
-*.db-journal
-*.sqlite
-*.sqlite-journal
-prisma/dev.db
-prisma/*.db*

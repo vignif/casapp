@@ -1,0 +1,19 @@
+apps.francescovigni.com {
+  encode zstd gzip
+
+  @casapp path /casapp* 
+  handle @casapp {
+    # Split API vs frontend
+    @api path /casapp/api*
+    handle @api {
+      reverse_proxy localhost:8003 {
+        header_up X-Forwarded-Proto {scheme}
+      }
+    }
+
+    # Everything else to Next.js (port 3000)
+    handle {
+      reverse_proxy localhost:3000
+    }
+  }
+}

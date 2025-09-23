@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Casapp
 
-## Getting Started
+Real estate asset management app (monorepo: Django backend + Next.js frontend). Built with TDD and 100% coverage gates in CI.
 
-First, run the development server:
+## Features
+- User authentication (JWT)
+- Manage assets (CRUD, per-user isolation)
+- File uploads per asset (bills, certifications, documents)
+- Market values over time
+- Tenants and rental contracts (track occupancy)
+- Asset performance (annual rent / latest market value)
+- Admin overview (totals and occupancy rate)
 
+## Stack
+- Backend: Django + DRF + SimpleJWT, Postgres
+- Frontend: Next.js (TypeScript)
+- CI: GitHub Actions with coverage 100% thresholds
+
+## Local Development
+
+Backend:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+poetry install
+poetry run python manage.py migrate
+make run
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Testing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Backend:
+```bash
+cd backend
+poetry run pytest
+```
 
-## Learn More
+Frontend:
+```bash
+cd frontend
+npm test
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
+- Backend runs on `0.0.0.0:8003` and expects to be mounted by Caddy under `/casapp`.
+  - Set env `DJANGO_USE_FORCE_SCRIPT_NAME=true` and `DJANGO_FORCE_SCRIPT_NAME=/casapp`.
+  - Set `DATABASE_URL` to your Postgres connection string.
+  - Collect static and configure media storage as needed.
+- Frontend `basePath` is `/casapp`.
+- Public URL: `https://apps.francescovigni.com/casapp/`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Caddy
+Use `deploy/Caddyfile.example` as a starting point. It proxies `/casapp/api` to Django (`localhost:8003`) and the rest to Next.js (`localhost:3000`).
